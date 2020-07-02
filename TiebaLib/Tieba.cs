@@ -1,0 +1,534 @@
+﻿using BakaSnowTool;
+using BakaSnowTool.Http;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace TiebaLib
+{
+    public class Tieba
+    {
+        ///// <summary>
+        ///// 获取楼中楼内容
+        ///// </summary>
+        ///// <param name="wbgldt">文本过滤DataTable</param>
+        ///// <returns></returns>
+        //public List<TiebaNeiRongJieGou> GetLzlNeiRong(out int lzlZongYeShu, DataTable wbgldt = null)
+        //{
+        //    //总页数
+        //    lzlZongYeShu = 0;
+
+        //    string url = "http://c.tieba.baidu.com/c/f/pb/floor";
+        //    string postStr
+        //        = Cookie
+        //        + "&_client_id=" + GetAndroidStamp()
+        //        + "&_client_type=2"
+        //        + "&_client_version=9.9.8.32"
+        //        + "&kz=" + Tid.ToString()
+        //        + "&pn=" + Pn.ToString();
+
+        //    postStr += "&sign=" + GetTiebaSign(postStr);
+
+        //    string neiRongFanHuiWenBen = Http.Post(url, postStr);
+        //    //Console.WriteLine(neiRongFanHuiWenBen);
+        //    //BST.XiedaoWenjian(@"C:\Users\bakas\Desktop\test2.txt", BST.DeUnicode(neiRongFanHuiWenBen));
+        //    //return new List<TiebaNeiRongJieGou>();
+
+        //    //内容列表
+        //    List<TiebaNeiRongJieGou> neiRongLieBiao = new List<TiebaNeiRongJieGou>();
+
+        //    //可能是网络故障
+        //    if (string.IsNullOrEmpty(neiRongFanHuiWenBen))
+        //    {
+        //        return new List<TiebaNeiRongJieGou>();
+        //    }
+
+        //    //解析
+        //    JsonData neiRongJsonData = new JsonData();
+        //    JsonData subpost_list = new JsonData();
+        //    try
+        //    {
+        //        neiRongJsonData = JsonMapper.ToObject(neiRongFanHuiWenBen);
+        //        subpost_list = neiRongJsonData.SelectToken("subpost_list");
+        //    }
+        //    catch
+        //    {
+        //        return new List<TiebaNeiRongJieGou>();
+        //    }
+
+        //    //访问失败
+        //    if (Convert.ToString(neiRongJsonData.SelectToken("error_code")) != "0")
+        //    {
+        //        Debug.WriteLine(neiRongJsonData.SelectToken("error_msg").ToString());
+        //        return new List<TiebaNeiRongJieGou>();
+        //    }
+
+        //    //当前楼中楼的楼层
+        //    int louCeng = neiRongJsonData.SelectToken("post").SelectToken("floor").ToInt32();
+
+        //    //获取总页数
+        //    lzlZongYeShu = neiRongJsonData.SelectToken("page").SelectToken("total_page").ToInt32();
+
+        //    #region "内容参数处理"
+        //    for (int neiRongJiShu = 0; neiRongJiShu < subpost_list.Count; neiRongJiShu++)
+        //    {
+        //        TiebaNeiRongJieGou neiRongCanShu = new TiebaNeiRongJieGou();
+
+        //        //帖子参数
+        //        neiRongCanShu.BiaoTi = neiRongJsonData.SelectToken("thread").SelectToken("title").ToString();
+        //        if (wbgldt != null) neiRongCanShu.BiaoTi = WenBenGuoLv(neiRongCanShu.BiaoTi, wbgldt);
+        //        neiRongCanShu.Tid = Tid;
+        //        neiRongCanShu.Pid = Pid;
+        //        neiRongCanShu.Spid = subpost_list[neiRongJiShu].SelectToken("id").ToInt64();
+        //        neiRongCanShu.LouCeng = louCeng;
+        //        neiRongCanShu.FaTieShiJianChuo = subpost_list[neiRongJiShu].SelectToken("time").ToInt64();
+        //        neiRongCanShu.FaTieShiJian = BST.ShiJianChuoDaoShiJian(neiRongCanShu.FaTieShiJianChuo * 1000);
+        //        neiRongCanShu.LzlHuiFuShu = 0;
+
+        //        //层主信息
+        //        neiRongCanShu.Uid = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("id").ToInt64();
+        //        neiRongCanShu.YongHuMing = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("name").ToString();
+        //        neiRongCanShu.NiCheng = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("name_show").ToString();
+        //        neiRongCanShu.TouXiang = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("portrait").ToString();
+        //        neiRongCanShu.DengJi = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("level_id").ToInt32();
+        //        neiRongCanShu.IsBaWu = Convert.ToString(subpost_list[neiRongJiShu].SelectToken("author").SelectToken("is_bawu")) == "1" ? true : false;
+
+        //        #region 帖子内容格式化
+        //        //内容处理
+        //        JsonData content = subpost_list[neiRongJiShu].SelectToken("content");
+
+        //        //初始化
+        //        neiRongCanShu.NeiRong = string.Empty;
+        //        for (int wenBenJiShu = 0; wenBenJiShu < content.Count; wenBenJiShu++)
+        //        {
+        //            //内容类型
+        //            int neiRongLeiXing = content[wenBenJiShu].SelectToken("type").ToInt32();
+
+        //            switch (neiRongLeiXing)
+        //            {
+        //                case NeiRongLeiXing.文本:
+        //                    if (wbgldt == null)//文本过滤
+        //                        neiRongCanShu.NeiRong += content[wenBenJiShu].SelectToken("text").ToString();
+        //                    else
+        //                        neiRongCanShu.NeiRong += WenBenGuoLv(content[wenBenJiShu].SelectToken("text").ToString(), wbgldt);
+        //                    break;
+        //                case NeiRongLeiXing.链接:
+        //                    neiRongCanShu.NeiRong += "#链接=" + content[wenBenJiShu].SelectToken("text").ToString() + "#";
+        //                    break;
+        //                case NeiRongLeiXing.表情:
+        //                    neiRongCanShu.NeiRong += "#表情=" + content[wenBenJiShu].SelectToken("c").ToString() + "#";
+        //                    break;
+        //                case NeiRongLeiXing.图片:
+        //                    neiRongCanShu.NeiRong += "#图片=" + content[wenBenJiShu].SelectToken("origin_src").ToString() + "=size=" + content[wenBenJiShu].SelectToken("bsize").ToString() + "#";
+        //                    break;
+        //                case NeiRongLeiXing.艾特:
+        //                    neiRongCanShu.NeiRong += "#艾特=" + content[wenBenJiShu].SelectToken("text").ToString().Replace("@", "") + "#";
+        //                    break;
+        //                case NeiRongLeiXing.视频:
+        //                    neiRongCanShu.NeiRong += "#视频#";
+        //                    break;
+        //                case NeiRongLeiXing.换行:
+        //                    //{"type":"7","text":"\n"}
+        //                    break;
+        //                case NeiRongLeiXing.电话号码:
+        //                    neiRongCanShu.NeiRong += content[wenBenJiShu].SelectToken("text").ToString();
+        //                    break;
+        //                case NeiRongLeiXing.语音:
+        //                    neiRongCanShu.NeiRong += "#语音=" + content[wenBenJiShu].SelectToken("voice_md5").ToString() + "=time=" + content[wenBenJiShu].SelectToken("during_time").ToString() + "#";
+        //                    break;
+        //                case NeiRongLeiXing.动态表情:
+        //                    neiRongCanShu.NeiRong += "#表情=" + content[wenBenJiShu].SelectToken("c").ToString() + "#";
+        //                    break;
+        //                case NeiRongLeiXing.涂鸦:
+        //                    neiRongCanShu.NeiRong += "#图片=" + content[wenBenJiShu].SelectToken("graffiti_info").SelectToken("url").ToString() + "=size=" + content[wenBenJiShu].SelectToken("bsize").ToString() + "#";
+        //                    break;
+        //                case NeiRongLeiXing.活动:
+        //                    neiRongCanShu.NeiRong += "#活动=" + content[wenBenJiShu].SelectToken("album_name").ToString() + "#";
+        //                    break;
+        //                case NeiRongLeiXing.热议:
+        //                    neiRongCanShu.NeiRong += "#热议=" + content[wenBenJiShu].SelectToken("text").ToString() + "#";
+        //                    break;
+        //                case NeiRongLeiXing.贴吧动图:
+        //                    neiRongCanShu.NeiRong += "#图片=" + content[wenBenJiShu].SelectToken("src").ToString() + "=size=" + content[wenBenJiShu].SelectToken("bsize").ToString() + "#";
+        //                    break;
+        //                default:
+        //                    BST.XieDaoWenJian(AppDomain.CurrentDomain.SetupInformation.ApplicationBase + Tid.ToString() + " lzl.txt", neiRongFanHuiWenBen);
+        //                    break;
+        //            }
+        //        }
+        //        #endregion
+
+        //        neiRongLieBiao.Add(neiRongCanShu);
+        //    }
+        //    #endregion
+
+        //    return neiRongLieBiao;
+        //}
+
+
+        #region 静态
+        /// <summary>
+        /// 取安卓Stamp
+        /// </summary>
+        /// <returns></returns>
+        public static string GetAndroidStamp()
+        {
+            //wappc_1584510405614_799
+
+            Random ra = new Random();
+
+            int[] stamp = new int[4];
+            stamp[0] = ra.Next(10000, 99999);
+            stamp[1] = ra.Next(1000, 9999);
+            stamp[2] = ra.Next(1000, 9999);
+            stamp[3] = ra.Next(100, 999);
+
+            return "wappc_" + stamp[0] + stamp[1] + stamp[2] + "_" + stamp[3];
+        }
+
+        /// <summary>
+        /// 取百度Tbs
+        /// </summary>
+        /// <param name="cookie">cookie</param>
+        /// <returns></returns>
+        public static string GetBaiduTbs(string cookie)
+        {
+            string html = TiebaHttp.Get("http://tieba.baidu.com/dc/common/tbs", cookie);
+            return BST.JieQuWenBen(html, "\"tbs\":\"", "\"");
+        }
+
+        /// <summary>
+        /// 获取百度账号在线状态
+        /// </summary>
+        /// <param name="cookie">cookie</param>
+        /// <returns></returns>
+        public static bool GetBaiduZhangHaoIsZaiXian(string cookie)
+        {
+            string html = TiebaHttp.Get("http://tieba.baidu.com/dc/common/tbs", cookie);
+            return BST.JieQuWenBen(html, "\"is_login\":", "}") == "1" ? true : false;
+        }
+
+        /// <summary>
+        /// 取贴吧Fid
+        /// </summary>
+        /// <param name="tiebaName">贴吧名</param>
+        /// <returns></returns>
+        public static string GetTiebaFid(string tiebaName)
+        {
+            string html = TiebaHttp.Get($"http://tieba.baidu.com/f/commit/share/fnameShareApi?fname={Http.UrlEncodeUtf8(tiebaName)}&ie=utf-8");
+            return BST.JieQuWenBen(html, "\"fid\":", ",");
+        }
+
+        /// <summary>
+        /// 取百度用户名
+        /// </summary>
+        /// <param name="cookie">cookie</param>
+        /// <returns></returns>
+        public static string GetBaiduYongHuMing(string cookie)
+        {
+            string html = TiebaHttp.Get("http://tieba.baidu.com/f/user/json_userinfo", cookie);
+            return BST.DeUnicode(BST.JieQuWenBen(html, "user_name_weak\":\"", "\""));
+        }
+
+        /// <summary>
+        /// 取百度Uid
+        /// </summary>
+        /// <param name="yongHuMing">用户名</param>
+        /// <returns></returns>
+        public static string GetBaiduUid(string yongHuMing)
+        {
+            string html = TiebaHttp.Get("http://tieba.baidu.com/i/sys/user_json?un=" + Http.UrlEncode(yongHuMing));
+            string uid = BST.JieQuWenBen(html, "\"id\":", ",\"");
+            if (uid == "0")
+            {
+                html = TiebaHttp.Get("http://tieba.baidu.com/home/main?un=" + Http.UrlEncode(yongHuMing) + "&fr=home");
+                uid = BST.JieQuWenBen(html, "home_user_id\" : ", ",");
+            }
+            return uid;
+        }
+
+        /// <summary>
+        /// 取贴吧Uid
+        /// </summary>
+        /// <param name="yongHuMing">用户名</param>
+        /// <returns></returns>
+        public static string GetTiebaUid(string yongHuMing)
+        {
+            string html = TiebaHttp.Get("http://tieba.baidu.com/i/sys/user_json?un=" + Http.UrlEncode(yongHuMing));
+            return BST.JieQuWenBen(html, "\"id\":", ",");
+        }
+
+        /// <summary>
+        /// 取贴吧Sign
+        /// </summary>
+        /// <param name="str">文本</param>
+        /// <returns></returns>
+        public static string GetTiebaSign(string str)
+        {
+            if (string.IsNullOrEmpty(str))
+            {
+                return "";
+            }
+
+            MD5 algorithm = MD5.Create();
+            byte[] data = algorithm.ComputeHash(Encoding.UTF8.GetBytes(Http.UrlDecodeUtf8(str.Replace("&", "") + "tiebaclient!!!")));
+            algorithm.Dispose();
+
+            string md5 = string.Empty;
+            for (int i = 0; i < data.Length; i++)
+            {
+                md5 += data[i].ToString("x2").ToUpperInvariant();
+            }
+
+            return md5;
+        }
+
+        /// <summary>
+        /// 获取吧务团队
+        /// </summary>
+        /// <param name="tiebaName">贴吧名</param>
+        /// <returns></returns>
+        public static List<BaWuTuanDuiJieGou> GetBaWuTuanDui(string tiebaName)
+        {
+            List<BaWuTuanDuiJieGou> baWuTuanDuiLieBiao = new List<BaWuTuanDuiJieGou>();
+
+            string html = TiebaHttp.Get($"http://tieba.baidu.com/bawu2/platform/listBawuTeamInfo?word={Http.UrlEncode(tiebaName)}");
+            if (string.IsNullOrEmpty(html))
+            {
+                return baWuTuanDuiLieBiao;
+            }
+
+            const string regexText = "<a href=\"/home/main\\?un=.*?\" class=\"user_name\" title=\"(.*?)\">";
+            MatchCollection match = new Regex(regexText).Matches(html);
+            for (int i = 0; i < match.Count; i++)
+            {
+                baWuTuanDuiLieBiao.Add(new BaWuTuanDuiJieGou
+                {
+                    YongHuMing = match[i].Value
+                });
+            }
+
+            return baWuTuanDuiLieBiao;
+        }
+
+        /// <summary>
+        /// 获取贴吧关注列表
+        /// </summary>
+        /// <param name="yonghuming">用户名</param>
+        /// <returns></returns>
+        public static List<GuanZhuJieGou> GetTiebaGuanZhuLieBiao(string cookie, string yongHuMing, int page = 1)
+        {
+            List<GuanZhuJieGou> tiebaGuanZhuLieBiao = new List<GuanZhuJieGou>();
+
+            string uid = GetTiebaUid(yongHuMing);
+            //string url = "http://c.tieba.baidu.com/c/f/forum/like";
+            //string postStr
+            //    = cookie
+            //    + "&_client_id=" + GetAndroidStamp()
+            //    + "&_client_type=2"
+            //    + "&_client_version=9.9.8.32"
+            //    + "&friend_uid=" + uid
+            //    + "&uid=" + uid;
+
+            string url = "http://c.tieba.baidu.com/c/f/forum/like";
+            string postStr
+                = cookie
+                + "&_client_id=" + GetAndroidStamp()
+                //+ "&_client_id=wappc_1584510405614_799"
+                + "&_client_type=2"
+                + "&_client_version=9.9.8.32"
+                + "&_phone_imei=450456461928196"
+                + "&cuid=00DC23509DCDF63928D194FD8D41703A%7CVRO6PAJEL"
+                + "&cuid_galaxy2=00DC23509DCDF63928D194FD8D41703A%7CVRO6PAJEL"
+                + "&cuid_gid="
+                + "&friend_uid=" + uid
+                + "&from=1019960r"
+                + "&is_guest=1"
+                + "&model=MI+6"
+                + "&net_type=1"
+                + "&oaid=%7B%22sc%22%3A0%2C%22sup%22%3A0%2C%22tl%22%3A0%7D"
+                + "&page_no=" + page
+                + "&page_size=50"
+                + "&stErrorNums=1"
+                + "&stMethod=1"
+                + "&stMode=1"
+                + "&stSize=5061"
+                + "&stTime=667"
+                + "&stTimesNum=1"
+                + "&timestamp=1584512309167"
+                + "&uid=0";
+
+            postStr += "&sign=" + GetTiebaSign(postStr);
+
+            string html = TiebaHttp.Post(url, postStr, cookie);
+            if (string.IsNullOrEmpty(html))
+            {
+                return tiebaGuanZhuLieBiao;
+            }
+
+            //解析
+            JObject htmlJson;
+            try
+            {
+                htmlJson = JObject.Parse(html);
+            }
+            catch
+            {
+                return tiebaGuanZhuLieBiao;
+            }
+
+            if (htmlJson["error_code"]?.ToString() != "0")
+            {
+                return tiebaGuanZhuLieBiao;
+            }
+
+            //{"server_time":"50714","time":1584513751,"ctime":0,"logid":2551816537,"error_code":"0"}
+
+            if (!htmlJson.ContainsKey("forum_list"))
+            {
+                return tiebaGuanZhuLieBiao;
+            }
+
+            var non_gconforum = htmlJson["forum_list"]?["non-gconforum"];
+            foreach (var ng in non_gconforum)
+            {
+                GuanZhuJieGou guanZhuJieGou = new GuanZhuJieGou
+                {
+                    TiebaName = ng["name"]?.ToString()
+                };
+                long.TryParse(ng["id"]?.ToString(), out guanZhuJieGou.Fid);
+                int.TryParse(ng["level_id"]?.ToString(), out guanZhuJieGou.DengJi);
+                int.TryParse(ng["cur_score"]?.ToString(), out guanZhuJieGou.JingYanZhi);
+
+                tiebaGuanZhuLieBiao.Add(guanZhuJieGou);
+            }
+
+            return tiebaGuanZhuLieBiao;
+        }
+
+        /// <summary>
+        /// 获取用户贴吧等级
+        /// </summary>
+        /// <param name="yongHuMing">用户名</param>
+        /// <param name="tiebaName">贴吧名</param>
+        /// <returns></returns>
+        public static int GetYongHuTiebaDengJi(string cookie, string yongHuMing, string tiebaName)
+        {
+            List<GuanZhuJieGou> liebiao = GetTiebaGuanZhuLieBiao(cookie, yongHuMing);
+
+            List<GuanZhuJieGou> jieGuo = liebiao.Where(x => (x.TiebaName == tiebaName)).ToList();
+            if (jieGuo.Count > 0)
+            {
+                return jieGuo[0].DengJi;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// 获取贴吧名片
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static MingPianJieGou GetTiebaMingPian(string id)
+        {
+            MingPianJieGou mingPianJieGou = new MingPianJieGou();
+
+            string canShu = $"&un={Http.UrlEncodeUtf8(id)}";
+            if (id.Length >= 20)
+            {
+                canShu = $"&id={id}";
+            }
+
+            string url = $"http://tieba.baidu.com/home/get/panel?ie=utf-8{canShu}";
+            Console.WriteLine(url);
+            string html = TiebaHttp.Get(url);
+            if (string.IsNullOrEmpty(html))
+            {
+                mingPianJieGou.Msg = "网络异常";
+                return mingPianJieGou;
+            }
+
+            JObject jObject;
+            try
+            {
+                jObject = JObject.Parse(html);
+            }
+            catch
+            {
+                mingPianJieGou.Msg = "Json解析失败";
+                return mingPianJieGou;
+            }
+
+            mingPianJieGou.Msg = jObject["error"]?.ToString();
+            if (jObject["no"]?.ToString() != "0")
+            {
+                return mingPianJieGou;
+            }
+
+            long.TryParse(jObject["data"]?["id"]?.ToString(), out mingPianJieGou.Uid);
+            mingPianJieGou.YongHuMing = jObject["data"]?["name"]?.ToString();
+            mingPianJieGou.NiCheng = jObject["data"]?["name_show"]?.ToString();
+            mingPianJieGou.TouXiang = jObject["data"]?["portrait_h"]?.ToString();
+
+            mingPianJieGou.HuoQuChengGong = true;
+            return mingPianJieGou;
+        }
+        #endregion
+
+        /// <summary>
+        /// 吧务团队结构
+        /// </summary>
+        public class BaWuTuanDuiJieGou
+        {
+            public string YongHuMing;
+        }
+
+        /// <summary>
+        /// 关注结构
+        /// </summary>
+        public class GuanZhuJieGou
+        {
+            public string TiebaName;
+            public long Fid;
+            public int DengJi;
+            public int JingYanZhi;
+        }
+
+        /// <summary>
+        /// UID结构
+        /// </summary>
+        public class UidJieGou
+        {
+            public long Uid;
+            public string YongHuMing;//用户名
+            public string NiCheng;//昵称
+            public string TouXiang;//头像
+            public int DengJi;//等级
+            public bool IsBaWu;//是否吧务
+        }
+
+        /// <summary>
+        /// 名片结构
+        /// </summary>
+        public class MingPianJieGou
+        {
+            public bool HuoQuChengGong;
+            public string Msg;
+
+            public long Uid;
+            public string YongHuMing;
+            public string NiCheng;
+            public string TouXiang;
+            //public DateTime TouXiangShangChuanShiJian;
+            //public long TouXiangShangChuanShiJianChuo;
+            //public string FaTieShu;
+            //public string BaLing;
+        }
+    }
+}
