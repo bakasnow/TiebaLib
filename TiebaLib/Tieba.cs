@@ -13,164 +13,6 @@ namespace TiebaLib
 {
     public class Tieba
     {
-        ///// <summary>
-        ///// 获取楼中楼内容
-        ///// </summary>
-        ///// <param name="wbgldt">文本过滤DataTable</param>
-        ///// <returns></returns>
-        //public List<TiebaNeiRongJieGou> GetLzlNeiRong(out int lzlZongYeShu, DataTable wbgldt = null)
-        //{
-        //    //总页数
-        //    lzlZongYeShu = 0;
-
-        //    string url = "http://c.tieba.baidu.com/c/f/pb/floor";
-        //    string postStr
-        //        = Cookie
-        //        + "&_client_id=" + GetAndroidStamp()
-        //        + "&_client_type=2"
-        //        + "&_client_version=9.9.8.32"
-        //        + "&kz=" + Tid.ToString()
-        //        + "&pn=" + Pn.ToString();
-
-        //    postStr += "&sign=" + GetTiebaSign(postStr);
-
-        //    string neiRongFanHuiWenBen = Http.Post(url, postStr);
-        //    //Console.WriteLine(neiRongFanHuiWenBen);
-        //    //BST.XiedaoWenjian(@"C:\Users\bakas\Desktop\test2.txt", BST.DeUnicode(neiRongFanHuiWenBen));
-        //    //return new List<TiebaNeiRongJieGou>();
-
-        //    //内容列表
-        //    List<TiebaNeiRongJieGou> neiRongLieBiao = new List<TiebaNeiRongJieGou>();
-
-        //    //可能是网络故障
-        //    if (string.IsNullOrEmpty(neiRongFanHuiWenBen))
-        //    {
-        //        return new List<TiebaNeiRongJieGou>();
-        //    }
-
-        //    //解析
-        //    JsonData neiRongJsonData = new JsonData();
-        //    JsonData subpost_list = new JsonData();
-        //    try
-        //    {
-        //        neiRongJsonData = JsonMapper.ToObject(neiRongFanHuiWenBen);
-        //        subpost_list = neiRongJsonData.SelectToken("subpost_list");
-        //    }
-        //    catch
-        //    {
-        //        return new List<TiebaNeiRongJieGou>();
-        //    }
-
-        //    //访问失败
-        //    if (Convert.ToString(neiRongJsonData.SelectToken("error_code")) != "0")
-        //    {
-        //        Debug.WriteLine(neiRongJsonData.SelectToken("error_msg").ToString());
-        //        return new List<TiebaNeiRongJieGou>();
-        //    }
-
-        //    //当前楼中楼的楼层
-        //    int louCeng = neiRongJsonData.SelectToken("post").SelectToken("floor").ToInt32();
-
-        //    //获取总页数
-        //    lzlZongYeShu = neiRongJsonData.SelectToken("page").SelectToken("total_page").ToInt32();
-
-        //    #region "内容参数处理"
-        //    for (int neiRongJiShu = 0; neiRongJiShu < subpost_list.Count; neiRongJiShu++)
-        //    {
-        //        TiebaNeiRongJieGou neiRongCanShu = new TiebaNeiRongJieGou();
-
-        //        //帖子参数
-        //        neiRongCanShu.BiaoTi = neiRongJsonData.SelectToken("thread").SelectToken("title").ToString();
-        //        if (wbgldt != null) neiRongCanShu.BiaoTi = WenBenGuoLv(neiRongCanShu.BiaoTi, wbgldt);
-        //        neiRongCanShu.Tid = Tid;
-        //        neiRongCanShu.Pid = Pid;
-        //        neiRongCanShu.Spid = subpost_list[neiRongJiShu].SelectToken("id").ToInt64();
-        //        neiRongCanShu.LouCeng = louCeng;
-        //        neiRongCanShu.FaTieShiJianChuo = subpost_list[neiRongJiShu].SelectToken("time").ToInt64();
-        //        neiRongCanShu.FaTieShiJian = BST.ShiJianChuoDaoShiJian(neiRongCanShu.FaTieShiJianChuo * 1000);
-        //        neiRongCanShu.LzlHuiFuShu = 0;
-
-        //        //层主信息
-        //        neiRongCanShu.Uid = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("id").ToInt64();
-        //        neiRongCanShu.YongHuMing = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("name").ToString();
-        //        neiRongCanShu.NiCheng = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("name_show").ToString();
-        //        neiRongCanShu.TouXiang = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("portrait").ToString();
-        //        neiRongCanShu.DengJi = subpost_list[neiRongJiShu].SelectToken("author").SelectToken("level_id").ToInt32();
-        //        neiRongCanShu.IsBaWu = Convert.ToString(subpost_list[neiRongJiShu].SelectToken("author").SelectToken("is_bawu")) == "1" ? true : false;
-
-        //        #region 帖子内容格式化
-        //        //内容处理
-        //        JsonData content = subpost_list[neiRongJiShu].SelectToken("content");
-
-        //        //初始化
-        //        neiRongCanShu.NeiRong = string.Empty;
-        //        for (int wenBenJiShu = 0; wenBenJiShu < content.Count; wenBenJiShu++)
-        //        {
-        //            //内容类型
-        //            int neiRongLeiXing = content[wenBenJiShu].SelectToken("type").ToInt32();
-
-        //            switch (neiRongLeiXing)
-        //            {
-        //                case NeiRongLeiXing.文本:
-        //                    if (wbgldt == null)//文本过滤
-        //                        neiRongCanShu.NeiRong += content[wenBenJiShu].SelectToken("text").ToString();
-        //                    else
-        //                        neiRongCanShu.NeiRong += WenBenGuoLv(content[wenBenJiShu].SelectToken("text").ToString(), wbgldt);
-        //                    break;
-        //                case NeiRongLeiXing.链接:
-        //                    neiRongCanShu.NeiRong += "#链接=" + content[wenBenJiShu].SelectToken("text").ToString() + "#";
-        //                    break;
-        //                case NeiRongLeiXing.表情:
-        //                    neiRongCanShu.NeiRong += "#表情=" + content[wenBenJiShu].SelectToken("c").ToString() + "#";
-        //                    break;
-        //                case NeiRongLeiXing.图片:
-        //                    neiRongCanShu.NeiRong += "#图片=" + content[wenBenJiShu].SelectToken("origin_src").ToString() + "=size=" + content[wenBenJiShu].SelectToken("bsize").ToString() + "#";
-        //                    break;
-        //                case NeiRongLeiXing.艾特:
-        //                    neiRongCanShu.NeiRong += "#艾特=" + content[wenBenJiShu].SelectToken("text").ToString().Replace("@", "") + "#";
-        //                    break;
-        //                case NeiRongLeiXing.视频:
-        //                    neiRongCanShu.NeiRong += "#视频#";
-        //                    break;
-        //                case NeiRongLeiXing.换行:
-        //                    //{"type":"7","text":"\n"}
-        //                    break;
-        //                case NeiRongLeiXing.电话号码:
-        //                    neiRongCanShu.NeiRong += content[wenBenJiShu].SelectToken("text").ToString();
-        //                    break;
-        //                case NeiRongLeiXing.语音:
-        //                    neiRongCanShu.NeiRong += "#语音=" + content[wenBenJiShu].SelectToken("voice_md5").ToString() + "=time=" + content[wenBenJiShu].SelectToken("during_time").ToString() + "#";
-        //                    break;
-        //                case NeiRongLeiXing.动态表情:
-        //                    neiRongCanShu.NeiRong += "#表情=" + content[wenBenJiShu].SelectToken("c").ToString() + "#";
-        //                    break;
-        //                case NeiRongLeiXing.涂鸦:
-        //                    neiRongCanShu.NeiRong += "#图片=" + content[wenBenJiShu].SelectToken("graffiti_info").SelectToken("url").ToString() + "=size=" + content[wenBenJiShu].SelectToken("bsize").ToString() + "#";
-        //                    break;
-        //                case NeiRongLeiXing.活动:
-        //                    neiRongCanShu.NeiRong += "#活动=" + content[wenBenJiShu].SelectToken("album_name").ToString() + "#";
-        //                    break;
-        //                case NeiRongLeiXing.热议:
-        //                    neiRongCanShu.NeiRong += "#热议=" + content[wenBenJiShu].SelectToken("text").ToString() + "#";
-        //                    break;
-        //                case NeiRongLeiXing.贴吧动图:
-        //                    neiRongCanShu.NeiRong += "#图片=" + content[wenBenJiShu].SelectToken("src").ToString() + "=size=" + content[wenBenJiShu].SelectToken("bsize").ToString() + "#";
-        //                    break;
-        //                default:
-        //                    BST.XieDaoWenJian(AppDomain.CurrentDomain.SetupInformation.ApplicationBase + Tid.ToString() + " lzl.txt", neiRongFanHuiWenBen);
-        //                    break;
-        //            }
-        //        }
-        //        #endregion
-
-        //        neiRongLieBiao.Add(neiRongCanShu);
-        //    }
-        //    #endregion
-
-        //    return neiRongLieBiao;
-        //}
-
-
         #region 静态
         /// <summary>
         /// 取安卓Stamp
@@ -210,7 +52,7 @@ namespace TiebaLib
         public static bool GetBaiduZhangHaoIsZaiXian(string cookie)
         {
             string html = TiebaHttp.Get("http://tieba.baidu.com/dc/common/tbs", cookie);
-            return BST.JieQuWenBen(html, "\"is_login\":", "}") == "1" ? true : false;
+            return BST.JieQuWenBen(html, "\"is_login\":", "}") == "1";
         }
 
         /// <summary>
@@ -481,6 +323,21 @@ namespace TiebaLib
         }
         #endregion
 
+        #region 结构
+        /// <summary>
+        /// UID结构
+        /// </summary>
+        public class UidJieGou
+        {
+            public long Uid;
+            public string YongHuMing;//用户名
+            public string NiCheng;//昵称
+            public string TouXiang;//头像
+            public int DengJi;//等级
+            public bool IsBaWu;//是否吧务
+            public TiebaYinJi YinJi;//印记
+        }
+
         /// <summary>
         /// 吧务团队结构
         /// </summary>
@@ -501,19 +358,6 @@ namespace TiebaLib
         }
 
         /// <summary>
-        /// UID结构
-        /// </summary>
-        public class UidJieGou
-        {
-            public long Uid;
-            public string YongHuMing;//用户名
-            public string NiCheng;//昵称
-            public string TouXiang;//头像
-            public int DengJi;//等级
-            public bool IsBaWu;//是否吧务
-        }
-
-        /// <summary>
         /// 名片结构
         /// </summary>
         public class MingPianJieGou
@@ -530,5 +374,6 @@ namespace TiebaLib
             //public string FaTieShu;
             //public string BaLing;
         }
+        #endregion
     }
 }

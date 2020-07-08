@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace TiebaLib
@@ -9,17 +11,30 @@ namespace TiebaLib
     /// <summary>
     /// 贴吧内容
     /// </summary>
-    public static class TiebaNeiRong
+    public class TiebaNeiRong
     {
         /// <summary>
-        /// 获取
+        /// 内容列表
+        /// </summary>
+        public List<JieGou> LieBiao { get; private set; }
+
+        /// <summary>
+        /// 拼接文本
+        /// </summary>
+        public string Text { get; private set; }
+
+        /// <summary>
+        /// TiebaNeiRong
         /// </summary>
         /// <param name="jToken"></param>
-        /// <returns></returns>
-        public static List<JieGou> Get(JToken jToken)
+        public TiebaNeiRong(JToken jToken)
         {
-            List<JieGou> neiRongLieBiao = new List<JieGou>();
+            //初始化
+            LieBiao = new List<JieGou>();
+            Text = string.Empty;
 
+            //索引
+            int suoYin = 0;
             foreach (var content in jToken)
             {
                 if (!int.TryParse(content["type"]?.ToString(), out int leiXing))
@@ -30,110 +45,182 @@ namespace TiebaLib
                 switch (leiXing)
                 {
                     case LeiXing.文本:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.文本,
                             WenBen = content["text"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += content["text"]?.ToString();
                         break;
 
                     case LeiXing.链接:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.链接,
                             WenBen = content["text"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += content["text"]?.ToString();
                         break;
 
                     case LeiXing.表情:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.表情,
                             WenBen = content["c"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += $"#表情={content["c"]?.ToString()}#";
                         break;
 
                     case LeiXing.图片:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.图片,
                             WenBen = content["origin_src"]?.ToString(),
                         });
+
+                        //拼接文本
+                        Text += $"#图片={content["origin_src"]?.ToString()}#";
                         break;
 
                     case LeiXing.艾特:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.艾特,
                             WenBen = content["text"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += $"#艾特={content["text"]?.ToString()}#";
                         break;
 
                     case LeiXing.视频:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.视频,
                             WenBen = "#视频#"
                         });
+
+                        //拼接文本
+                        Text += "#视频#";
                         break;
 
                     case LeiXing.换行:
+                        //列表
+                        LieBiao.Add(new JieGou
+                        {
+                            SuoYin = suoYin++,
+                            LeiXing = LeiXing.换行,
+                            WenBen = "\n"
+                        });
                         break;
 
                     case LeiXing.电话号码:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.电话号码,
                             WenBen = content["text"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += content["text"]?.ToString();
                         break;
 
                     case LeiXing.语音:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.语音,
                             WenBen = content["voice_md5"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += $"#语音#";
                         break;
 
                     case LeiXing.动态表情:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.动态表情,
                             WenBen = content["c"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += $"#表情={content["c"]?.ToString()}#";
                         break;
 
                     case LeiXing.涂鸦:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.涂鸦,
                             WenBen = content["graffiti_info"]?["url"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += $"#涂鸦={content["graffiti_info"]?["url"]?.ToString()}#";
                         break;
 
                     case LeiXing.活动:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.活动,
                             WenBen = content["album_name"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += $"#活动={content["album_name"]?.ToString()}#";
                         break;
 
                     case LeiXing.热议:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.热议,
                             WenBen = content["text"]?.ToString()
                         });
-                        break;
 
+                        //拼接文本
+                        Text += $"#热议={content["text"]?.ToString()}#";
+                        break;
+                          
                     case LeiXing.动态图片:
-                        neiRongLieBiao.Add(new JieGou
+                        //列表
+                        LieBiao.Add(new JieGou
                         {
+                            SuoYin = suoYin++,
                             LeiXing = LeiXing.动态图片,
                             WenBen = content["src"]?.ToString()
                         });
+
+                        //拼接文本
+                        Text += $"#图片={content["src"]?.ToString()}#";
                         break;
 
                     default:
@@ -141,8 +228,6 @@ namespace TiebaLib
                         break;
                 }
             }
-
-            return neiRongLieBiao;
         }
 
         /// <summary>
@@ -150,8 +235,9 @@ namespace TiebaLib
         /// </summary>
         public class JieGou
         {
-            public int LeiXing;
-            public string WenBen;
+            public int SuoYin;//索引
+            public int LeiXing;//类型
+            public string WenBen;//文本
         }
 
         /// <summary>

@@ -59,9 +59,10 @@
     <Compile Include="TiebaGeRenZhuYe.cs" />
     <Compile Include="TiebaGeRenZhuYeChuPingBan.cs" />
     <Compile Include="TiebaHuiFu.cs" />
-    <Compile Include="TiebaLZL.cs" />
+    <Compile Include="TiebaLouZhongLou.cs" />
     <Compile Include="TiebaNeiRong.cs" />
     <Compile Include="TiebaQianDao.cs" />
+    <Compile Include="TiebaYinJi.cs" />
     <Compile Include="TiebaZhuTi.cs" />
   </ItemGroup>
   <ItemGroup>

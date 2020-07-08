@@ -1,5 +1,4 @@
 ﻿using BakaSnowTool;
-using BakaSnowTool.Http;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -75,16 +74,6 @@ namespace TiebaLib
             return TiebaHttp.Post(url, postStr);
         }
 
-        ///// <summary>
-        ///// 获取Json对象
-        ///// </summary>
-        ///// <param name="html"></param>
-        ///// <returns></returns>
-        //private string GetJObject(string html)
-        //{
-
-        //}
-
         /// <summary>
         /// 获取回复列表
         /// </summary>
@@ -158,15 +147,17 @@ namespace TiebaLib
                 //帖子参数
                 JieGou huiFuJieGou = new JieGou
                 {
-                    BiaoTi = post["thread"]?["title"]?.ToString()
+                    BiaoTi = post["thread"]?["title"]?.ToString(),
+                    Tid = Tid
                 };
-                huiFuJieGou.Tid = Tid;
                 long.TryParse(post["id"]?.ToString(), out huiFuJieGou.Pid);
-                huiFuJieGou.Spid = -1;
+                //huiFuJieGou.Spid = -1;
                 int.TryParse(post["floor"]?.ToString(), out huiFuJieGou.LouCeng);
                 long.TryParse(post["time"]?.ToString(), out huiFuJieGou.FaTieShiJianChuo);
                 huiFuJieGou.FaTieShiJian = BST.ShiJianChuoDaoShiJian(huiFuJieGou.FaTieShiJianChuo * 1000);
                 int.TryParse(post["sub_post_number"]?.ToString(), out huiFuJieGou.LzlHuiFuShu);
+                int.TryParse(post["agree"]?["agree_num"]?.ToString(), out huiFuJieGou.ZanTongShu);
+                int.TryParse(post["agree"]?["disagree_num"]?.ToString(), out huiFuJieGou.FanDuiShu);
 
                 //层主信息
                 foreach (var user in user_list)
@@ -178,13 +169,14 @@ namespace TiebaLib
                         huiFuJieGou.NiCheng = user["name_show"]?.ToString();
                         huiFuJieGou.TouXiang = user["portrait"]?.ToString();
                         int.TryParse(user["level_id"]?.ToString(), out huiFuJieGou.DengJi);
-                        huiFuJieGou.IsBaWu = user["is_bawu"]?.ToString() == "1" ? true : false;
+                        huiFuJieGou.IsBaWu = user["is_bawu"]?.ToString() == "1";
+                        huiFuJieGou.YinJi = new TiebaYinJi(user["iconinfo"]);
                         break;
                     }
                 }
 
                 //帖子内容
-                huiFuJieGou.NeiRong = TiebaNeiRong.Get(post["content"]);
+                huiFuJieGou.NeiRong = new TiebaNeiRong(post["content"]);
 
                 huiFuLieBiao.Add(huiFuJieGou);
             }
@@ -202,12 +194,14 @@ namespace TiebaLib
 
             public long Tid;
             public long Pid;
-            public long Spid;
+            //public long Spid;
 
             public int LouCeng;//楼层
             public DateTime FaTieShiJian;//发帖时间
             public long FaTieShiJianChuo;//发帖时间戳
-            public List<TiebaNeiRong.JieGou> NeiRong;//内容
+            public TiebaNeiRong NeiRong;//内容
+            public int ZanTongShu;//赞同数
+            public int FanDuiShu;//反对数
 
             public int LzlHuiFuShu;//楼中楼回复数
         }

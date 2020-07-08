@@ -144,9 +144,9 @@ namespace TiebaLib
                 //通用参数
                 long.TryParse(thread["create_time"]?.ToString(), out zhuTiJieGou.FaTieShiJianChuo);
                 zhuTiJieGou.FaTieShiJian = BST.ShiJianChuoDaoShiJian(zhuTiJieGou.FaTieShiJianChuo * 1000);
-                zhuTiJieGou.IsZhiDing = thread["is_top"]?.ToString() == "1" ? true : false;
-                zhuTiJieGou.IsJingPin = thread["is_good"]?.ToString() == "1" ? true : false;
-                zhuTiJieGou.IsHuiYuanZhiDing = thread["is_membertop"]?.ToString() == "1" ? true : false;
+                zhuTiJieGou.IsZhiDing = thread["is_top"]?.ToString() == "1";
+                zhuTiJieGou.IsJingPin = thread["is_good"]?.ToString() == "1";
+                zhuTiJieGou.IsHuiYuanZhiDing = thread["is_membertop"]?.ToString() == "1";
 
                 //楼主信息
                 foreach (var user in user_list)
@@ -158,7 +158,8 @@ namespace TiebaLib
                         zhuTiJieGou.NiCheng = user["name_show"]?.ToString();
                         zhuTiJieGou.TouXiang = user["portrait"]?.ToString();
                         zhuTiJieGou.DengJi = -1;//主题帖没有等级
-                        zhuTiJieGou.IsBaWu = user["is_bawu"]?.ToString() == "1" ? true : false;
+                        zhuTiJieGou.IsBaWu = user["is_bawu"]?.ToString() == "1";
+                        zhuTiJieGou.YinJi = new TiebaYinJi(user["iconinfo"]);
                         break;
                     }
                 }
@@ -177,7 +178,7 @@ namespace TiebaLib
         {
             //主题参数
             public int LeiXing;//类型
-            public long Tid;
+            public long Tid;//Tid
 
             public string BiaoTi;//标题
             public int DianJiLiang;//点击量
