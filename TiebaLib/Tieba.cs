@@ -1,9 +1,11 @@
 ﻿using BakaSnowTool;
 using BakaSnowTool.Http;
+using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -133,28 +135,77 @@ namespace TiebaLib
         /// <summary>
         /// 获取吧务团队
         /// </summary>
-        /// <param name="tiebaName">贴吧名</param>
+        /// <param name="tiebaName"></param>
+        /// <param name="quChongFu"></param>
+        /// <param name="msg"></param>
         /// <returns></returns>
-        public static List<BaWuTuanDuiJieGou> GetBaWuTuanDui(string tiebaName)
+        public static List<BaWuTuanDuiJieGou> GetBaWuTuanDui(string tiebaName, out string msg)
         {
             List<BaWuTuanDuiJieGou> baWuTuanDuiLieBiao = new List<BaWuTuanDuiJieGou>();
 
-            string html = TiebaHttp.Get($"http://tieba.baidu.com/bawu2/platform/listBawuTeamInfo?word={Http.UrlEncode(tiebaName)}");
+            string html = TiebaHttp.Get("http://tieba.baidu.com/bawu2/platform/listBawuTeamInfo?word=" + Http.UrlEncode(tiebaName));
             if (string.IsNullOrEmpty(html))
             {
+                msg = "网络错误";
                 return baWuTuanDuiLieBiao;
             }
 
-            const string regexText = "<a href=\"/home/main\\?un=.*?\" class=\"user_name\" title=\"(.*?)\">";
-            MatchCollection match = new Regex(regexText).Matches(html);
-            for (int i = 0; i < match.Count; i++)
+            const string wenBenTou = "<div class=\"bawu_team_wrap\">";
+            const string wenBenWei = "<div id=\"footer\" class=\"footer\">";
+
+            //将吧务团队列表的源码过滤出来
+            string baWuTuanDuiHtml = BST.JieQuWenBen(html, wenBenTou, wenBenWei);
+            baWuTuanDuiHtml = wenBenTou + baWuTuanDuiHtml + wenBenWei;
+            //File.WriteAllText(@"C:\Users\bakas\Desktop\test1.html", baWuTuanDuiHtml);
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(baWuTuanDuiHtml);
+
+            HtmlNodeCollection bawu_team_wrap_list = doc.DocumentNode?.SelectNodes("div[1]/div");
+            if (bawu_team_wrap_list == null)
             {
-                baWuTuanDuiLieBiao.Add(new BaWuTuanDuiJieGou
-                {
-                    YongHuMing = match[i].Value
-                });
+                msg = "Html解析失败1";
+                return baWuTuanDuiLieBiao;
             }
 
+            foreach (var bawu_single_type in bawu_team_wrap_list)
+            {
+                //职务标题
+                HtmlNode bawu_single_type_title = bawu_single_type?.SelectSingleNode("div[1]");
+                if (bawu_single_type_title == null) continue;
+
+                //职务
+                string zhiWu = bawu_single_type_title.InnerText;
+
+                //职务列表
+                HtmlNodeCollection member_first_row_list = bawu_single_type?.SelectNodes("div[2]/span");
+                if (member_first_row_list == null) continue;
+
+                foreach (var member_first_row in member_first_row_list)
+                {
+                    //头像
+                    string touXiang = member_first_row?.SelectSingleNode("a[@class='avatar']")?.SelectSingleNode("img")?.Attributes["src"]?.Value;
+
+                    //过滤头像链接
+                    if (touXiang.Contains("/"))
+                    {
+                        string[] touXiangList = touXiang.Split('/');
+                        touXiang = touXiangList[touXiangList.Length - 1];
+                    }
+
+                    //用户名
+                    string yongHuMing = member_first_row?.SelectSingleNode("a[@class='user_name']")?.Attributes["title"]?.Value;
+
+                    baWuTuanDuiLieBiao.Add(new BaWuTuanDuiJieGou
+                    {
+                        ZhiWu = zhiWu,
+                        YongHuMing = yongHuMing,
+                        TouXiang = touXiang
+                    });
+                }
+            }
+
+            msg = "获取成功";
             return baWuTuanDuiLieBiao;
         }
 
@@ -343,7 +394,9 @@ namespace TiebaLib
         /// </summary>
         public class BaWuTuanDuiJieGou
         {
+            public string ZhiWu;
             public string YongHuMing;
+            public string TouXiang;
         }
 
         /// <summary>

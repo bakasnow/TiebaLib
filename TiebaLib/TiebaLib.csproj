@@ -35,12 +35,15 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\BakaSnowTool\BakaSnowTool\bin\Release\BakaSnowTool.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.11.24.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.11.24\lib\Net40\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="HttpHelper, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\HttpHepler v2.2\CsharpHttpHelper\bin\Release\HttpHelper.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
