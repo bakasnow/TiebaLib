@@ -1,5 +1,4 @@
-﻿using System;
-using BakaSnowTool;
+﻿using BakaSnowTool;
 using BakaSnowTool.Http;
 using Newtonsoft.Json.Linq;
 
