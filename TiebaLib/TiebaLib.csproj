@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TiebaBaWuHouTai.cs" />
     <Compile Include="TiebaHttp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tieba.cs" />

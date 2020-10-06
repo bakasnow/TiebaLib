@@ -33,6 +33,8 @@ namespace TiebaLib
             int suoYin = 0;
             foreach (var content in jToken)
             {
+                Console.WriteLine(content);
+
                 if (!int.TryParse(content["type"]?.ToString(), out int leiXing))
                 {
                     continue;
@@ -59,11 +61,11 @@ namespace TiebaLib
                         {
                             SuoYin = suoYin++,
                             LeiXing = LeiXing.链接,
-                            WenBen = content["text"]?.ToString()
+                            WenBen = content["link"]?.ToString()
                         });
 
                         //拼接文本
-                        Text += content["text"]?.ToString();
+                        Text += content["link"]?.ToString();
                         break;
 
                     case LeiXing.表情:
@@ -205,7 +207,7 @@ namespace TiebaLib
                         //拼接文本
                         Text += $"#热议={content["text"]?.ToString()}#";
                         break;
-                          
+
                     case LeiXing.动态图片:
                         //列表
                         LieBiao.Add(new JieGou
@@ -220,7 +222,7 @@ namespace TiebaLib
                         break;
 
                     default:
-                        Console.WriteLine(content.ToString());
+                        Text += content;
                         break;
                 }
             }
