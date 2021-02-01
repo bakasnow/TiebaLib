@@ -370,6 +370,37 @@ namespace TiebaLib
             mingPianJieGou.HuoQuChengGong = true;
             return mingPianJieGou;
         }
+
+        /// <summary>
+        /// 删自己的帖子
+        /// </summary>
+        /// <param name="cookie">Cookie</param>
+        /// <param name="tiebaName">贴吧名</param>
+        /// <param name="fid">Fid</param>
+        /// <param name="tid">Tid</param>
+        /// <param name="pid">Pid</param>
+        /// <param name="isLzl">是否楼中楼</param>
+        /// <returns></returns>
+        public static bool ShanTie(string cookie, string tiebaName, string fid, string tid, string pid, bool isLzl = false)
+        {
+            if (string.IsNullOrEmpty(fid))
+            {
+                fid = GetTiebaFid(tiebaName);
+            }
+
+            const string url = "https://tieba.baidu.com/f/commit/post/delete";
+            string postData = $"ie=utf-8&tbs={GetBaiduTbs(cookie)}&kw={Http.UrlEncodeUtf8(tiebaName)}&fid={fid}&tid={tid}&user_name={Http.UrlEncodeUtf8("祭雪夏炎")}&delete_my_post=1&delete_my_thread=1&is_vipdel=1&pid={pid}&is_finf={(isLzl ? "1" : "false")}";
+
+            string html = TiebaHttp.Post(url, postData, cookie);
+            if (BST.JieQuWenBen(html, "\"no\":", ",") != "0")
+            {
+                Console.WriteLine(html);
+                return false;
+            }
+
+            return true;
+        }
+
         #endregion
 
         #region 结构

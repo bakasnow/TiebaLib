@@ -33,7 +33,7 @@ namespace TiebaLib
             int suoYin = 0;
             foreach (var content in jToken)
             {
-                Console.WriteLine(content);
+                //Console.WriteLine(content);
 
                 if (!int.TryParse(content["type"]?.ToString(), out int leiXing))
                 {

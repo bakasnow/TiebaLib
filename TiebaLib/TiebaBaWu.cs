@@ -1,6 +1,8 @@
 ﻿using BakaSnowTool;
 using BakaSnowTool.Http;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics.Eventing.Reader;
+using System.Net.Configuration;
 
 namespace TiebaLib
 {
@@ -227,6 +229,112 @@ namespace TiebaLib
             }
 
             return -1;
+        }
+
+        /// <summary>
+        /// 加入黑名单
+        /// </summary>
+        /// <returns></returns>
+        public bool JiaRuHeiMingDan(out string msg)
+        {
+            string uid = Tieba.GetBaiduUid(YongHuMing);
+            if (string.IsNullOrEmpty(uid))
+            {
+                msg = "Uid获取失败";
+                return false;
+            }
+
+            return JiaRuHeiMingDan(uid, out msg);
+        }
+
+        /// <summary>
+        /// 加入黑名单
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <returns></returns>
+        public bool JiaRuHeiMingDan(string uid, out string msg)
+        {
+            string url = "http://tieba.baidu.com/bawu2/platform/addBlack";
+            string postData = $"tbs={Tieba.GetBaiduTbs(Cookie)}&user_id={uid}&word={Http.UrlEncodeUtf8(TiebaName)}&ie=utf-8";
+            string html = TiebaHttp.Post(url, postData, Cookie);
+            if (string.IsNullOrEmpty(html))
+            {
+                msg = "网络错误";
+                return false;
+            }
+
+            JObject jObject;
+            try
+            {
+                jObject = JObject.Parse(html);
+            }
+            catch
+            {
+                msg = "Json解析失败";
+                return false;
+            }
+
+            msg = jObject["errmsg"]?.ToString();
+            if (jObject["errno"]?.ToString() != "0")
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 移除黑名单
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="yongHuMing"></param>
+        /// <returns></returns>
+        public bool YiChuHeiMingDan(out string msg)
+        {
+            string uid = Tieba.GetBaiduUid(YongHuMing);
+            if (string.IsNullOrEmpty(uid))
+            {
+                msg = "Uid获取失败";
+                return false;
+            }
+
+            return YiChuHeiMingDan(uid, out msg);
+        }
+
+        /// <summary>
+        /// 移除黑名单
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <returns></returns>
+        public bool YiChuHeiMingDan(string uid, out string msg)
+        {
+            string url = "http://tieba.baidu.com/bawu2/platform/cancelBlack";
+            string postData = $"word={Http.UrlEncodeUtf8(TiebaName)}&tbs={Tieba.GetBaiduTbs(Cookie)}&list%5B%5D={uid}&ie=utf-8";
+            string html = TiebaHttp.Post(url, postData, Cookie);
+            if (string.IsNullOrEmpty(html))
+            {
+                msg = "网络错误";
+                return false;
+            }
+
+            JObject jObject;
+            try
+            {
+                jObject = JObject.Parse(html);
+            }
+            catch
+            {
+                msg = "Json解析失败";
+                return false;
+            }
+
+            msg = jObject["errmsg"]?.ToString();
+            if (jObject["errno"]?.ToString() != "0")
+            {
+                return false;
+            }
+
+            return true;
         }
 
         ///// <summary>
